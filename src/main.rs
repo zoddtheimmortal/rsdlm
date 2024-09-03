@@ -9,6 +9,15 @@ error_chain! {
     }
 }
 
+/* todo ->
+    add error handling
+    add auto file format detection
+    add progress bar
+    add simple tui
+    expand to multi chunk parallel downloading,
+        multi file downloading, multi threaded downloading
+*/
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let target = "https://www.rust-lang.org/logos/rust-logo-512x512.png";
