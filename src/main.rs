@@ -1,8 +1,6 @@
 use error_chain::error_chain;
+use rsdlm::downloader::download_file;
 use rsdlm::utils::validate_url;
-use std::fs::File;
-use std::io::copy;
-use std::path::PathBuf;
 
 error_chain! {
     foreign_links {
@@ -14,26 +12,17 @@ error_chain! {
 #[tokio::main]
 async fn main() -> Result<()> {
     let target = "https://www.rust-lang.org/logos/rust-logo-512x512.png";
+    let file_path = "./data/downloaded_file.png";
     if !validate_url(target) {
         // add proper error handling later
-        println!("Invalid URL");
+        eprintln!("Invalid URL");
         return Ok(());
     }
-    let response = reqwest::get(target).await?;
 
-    let custom_path = PathBuf::from("./data");
-    let fname = response
-        .url()
-        .path_segments()
-        .and_then(|segments| segments.last())
-        .and_then(|name| if name.is_empty() { None } else { Some(name) })
-        .unwrap_or("tmp.bin");
+    match download_file(&target, &file_path).await {
+        Ok(_) => println!("File downloaded successfully"),
+        Err(e) => eprintln!("Error downloading file: {}", e),
+    }
 
-    let dest = custom_path.join(fname);
-    println!("Path: {:?}", dest);
-    let mut dest_file = File::create(dest)?;
-
-    let content = response.text().await?;
-    copy(&mut content.as_bytes(), &mut dest_file)?;
     Ok(())
 }
