@@ -1,27 +1,33 @@
-use std::{fs::File, io::copy};
-use tempfile::Builder;
+use error_chain::error_chain;
+use std::fs::File;
+use std::io::copy;
+use std::path::PathBuf;
+
+error_chain! {
+    foreign_links {
+        Io(std::io::Error);
+        HttpRequest(reqwest::Error);
+    }
+}
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let tmp_dir = Builder::new().prefix("example").tempdir()?;
+async fn main() -> Result<()> {
     let target = "https://www.rust-lang.org/logos/rust-logo-512x512.png";
     let response = reqwest::get(target).await?;
 
-    let mut dest = {
-        let fname = response
-            .url()
-            .path_segments()
-            .and_then(|segments| segments.last())
-            .and_then(|name| if name.is_empty() { None } else { Some(name) })
-            .unwrap_or("tmp.bin");
-        println!("File to downlaod: {}", fname);
-        let dir = tmp_dir.path().join(fname);
-        println!("File path: {:?}", dir);
-        File::create(dir)?
-    };
+    let custom_path = PathBuf::from("./data");
+    let fname = response
+        .url()
+        .path_segments()
+        .and_then(|segments| segments.last())
+        .and_then(|name| if name.is_empty() { None } else { Some(name) })
+        .unwrap_or("tmp.bin");
+
+    let dest = custom_path.join(fname);
+    println!("Path: '{:?}'", dest);
+    let mut dest_file = File::create(dest)?;
 
     let content = response.text().await?;
-    let _ = copy(&mut content.as_bytes(), &mut dest);
-
+    copy(&mut content.as_bytes(), &mut dest_file)?;
     Ok(())
 }

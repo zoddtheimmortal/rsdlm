@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.16", features = ["derive"] }
+error-chain = "0.12.4"
 reqwest = "0.12.7"
 starbase = "0.8.2"
 tempfile = "3.12.0"
