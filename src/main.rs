@@ -1,5 +1,5 @@
 use error_chain::error_chain;
-use rsdlm::url::validate_url;
+use rsdlm::utils::validate_url;
 use std::fs::File;
 use std::io::copy;
 use std::path::PathBuf;
